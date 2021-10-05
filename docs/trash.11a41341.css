@@ -1,0 +1,12 @@
+
+.trash-icon{
+    content: url('/trash.be1686b2.png');
+    width: 32px;
+  }
+  
+  .trash-icon:hover{
+    content: url('/trash-hover.7f0a5c88.png');
+  }
+
+
+/*# sourceMappingURL=/trash.11a41341.css.map */
