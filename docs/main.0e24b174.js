@@ -11221,34 +11221,53 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 (0, _jquery.default)('#txt-id').trigger('focus');
 (0, _jquery.default)('#btn-save').on('click', function () {
-  var id = (0, _jquery.default)('#txt-id').val();
-  var name = (0, _jquery.default)('#txt-name').val();
-  var address = (0, _jquery.default)('#txt-address').val();
+  var txtId = (0, _jquery.default)('#txt-id');
+  var txtName = (0, _jquery.default)('#txt-name');
+  var txtAddress = (0, _jquery.default)('#txt-address');
+  var id = txtId.val();
+  var name = txtName.val();
+  var address = txtAddress.val();
   var valid = true;
   (0, _jquery.default)('#txt-id, #txt-name, #txt-address').parent().removeClass('invalid');
 
   if (address.length < 3) {
-    (0, _jquery.default)('#txt-address').parent().addClass('invalid');
-    (0, _jquery.default)('#txt-address').trigger('select');
+    txtAddress.parent().addClass('invalid');
+    txtAddress.trigger('select');
     valid = false;
   }
 
   if (!/[A-Za-z .]{3,}/.test(name)) {
-    (0, _jquery.default)('#txt-name').parent().addClass('invalid');
-    (0, _jquery.default)('#txt-name').trigger('select');
+    txtName.parent().addClass('invalid');
+    txtName.trigger('select');
     valid = false;
   }
 
   if (!/^C\d{3}$/.test(id.trim())) {
-    (0, _jquery.default)('#txt-id').parent().addClass('invalid');
-    (0, _jquery.default)('#txt-id').trigger('select');
+    txtId.parent().addClass('invalid');
+    txtId.trigger('select');
     valid = false;
   }
 
   if (!valid) return;
   var rowHTML = "\n                    <tr>\n                        <td>".concat(id, "</td>\n                        <td>").concat(name, "</td>\n                        <td>").concat(address, "</td>\n                        <td><div class=\"trash\"></div></td>\n                    </tr>\n                  ");
   (0, _jquery.default)('#tbl-customers tbody').append(rowHTML);
+  var trash = (0, _jquery.default)('.trash');
+  trash.off('click');
+  trash.on('click', function (eventData) {
+    if (confirm('Are you sure to delete the customer ')) {
+      (0, _jquery.default)(eventData.target).parents('tr').fadeOut(500, function () {
+        (0, _jquery.default)(this).remove();
+        showHideTableFooter();
+      });
+    }
+  });
+  showHideTableFooter();
 });
+
+function showHideTableFooter() {
+  var tfoot = (0, _jquery.default)('#tbl-customers tfoot');
+  (0, _jquery.default)('#tbl-customers tbody tr').length > 0 ? tfoot.hide() : tfoot.show();
+}
 },{"jquery":"node_modules/jquery/dist/jquery.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

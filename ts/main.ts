@@ -4,29 +4,32 @@ $('#txt-id').trigger('focus');
 
 $('#btn-save').on('click', ()=>{
 
+   const txtId = $('#txt-id');
+   const txtName = $('#txt-name')
+   const txtAddress = $('#txt-address');
 
-   const id = $('#txt-id').val() as string;
-   const name = $('#txt-name').val() as string;
-   const address = $('#txt-address').val() as string;
+   const id = txtId.val() as string;
+   const name = txtName.val() as string;
+   const address = txtAddress.val() as string;
    let valid = true;
 
    $('#txt-id, #txt-name, #txt-address').parent().removeClass('invalid');
 
    if (address.length < 3) {
-      $('#txt-address').parent().addClass('invalid');
-      $('#txt-address').trigger('select');
+      txtAddress.parent().addClass('invalid');
+      txtAddress.trigger('select');
       valid = false;
    }
 
    if (!/[A-Za-z .]{3,}/.test(name)) {
 
-      $('#txt-name').parent().addClass('invalid');
-      $('#txt-name').trigger('select');
+      txtName.parent().addClass('invalid');
+      txtName.trigger('select');
       valid = false;
    }
    if (!/^C\d{3}$/.test(id.trim())) {
-      $('#txt-id').parent().addClass('invalid');
-      $('#txt-id').trigger('select');
+      txtId.parent().addClass('invalid');
+      txtId.trigger('select');
       valid = false;
    }
 
@@ -42,4 +45,24 @@ $('#btn-save').on('click', ()=>{
                   `;
 
    $('#tbl-customers tbody').append(rowHTML);
-})
+
+   const trash = $('.trash');
+
+   trash.off('click');
+   trash.on('click', (eventData)=>{
+      if(confirm('Are you sure to delete the customer ')){
+         $(eventData.target).parents('tr').fadeOut(500, function (){
+            $(this).remove();
+            showHideTableFooter();
+         });
+      }
+   });
+
+   showHideTableFooter()
+});
+
+function showHideTableFooter(){
+   const  tfoot = $('#tbl-customers tfoot');
+   ($('#tbl-customers tbody tr').length > 0) ? tfoot.hide(): tfoot.show();
+}
+
