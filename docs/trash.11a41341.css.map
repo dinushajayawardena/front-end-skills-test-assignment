@@ -1,1 +1,0 @@
-{"version":3,"sources":["trash.css"],"names":[],"mappings":";AACA;IACI,qDAAgC;IAChC,WAAW;EACb;;EAEA;IACE,qDAAsC;EACxC","file":"trash.11a41341.css","sourceRoot":"..","sourcesContent":["\n.trash-icon{\n    content: url('../img/trash.png');\n    width: 32px;\n  }\n  \n  .trash-icon:hover{\n    content: url('../img/trash-hover.png');\n  }\n"]}

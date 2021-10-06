@@ -11219,14 +11219,20 @@ var _jquery = _interopRequireDefault(require("jquery"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var pageSize = calculatePageSize();
+var pages = 1;
+var selectedPage = 1;
 (0, _jquery.default)('#txt-id').trigger('focus');
-(0, _jquery.default)('#btn-save').on('click', function () {
+/* create/ update customer */
+
+(0, _jquery.default)('#btn-save').on('click', function (eventData) {
+  eventData.preventDefault();
   var txtId = (0, _jquery.default)('#txt-id');
   var txtName = (0, _jquery.default)('#txt-name');
   var txtAddress = (0, _jquery.default)('#txt-address');
-  var id = txtId.val();
-  var name = txtName.val();
-  var address = txtAddress.val();
+  var id = txtId.val().trim();
+  var name = txtName.val().trim();
+  var address = txtAddress.val().trim();
   var valid = true;
   (0, _jquery.default)('#txt-id, #txt-name, #txt-address').parent().removeClass('invalid');
 
@@ -11242,31 +11248,207 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
     valid = false;
   }
 
-  if (!/^C\d{3}$/.test(id.trim())) {
+  if (!/^C\d{3}$/.test(id)) {
     txtId.parent().addClass('invalid');
     txtId.trigger('select');
     valid = false;
   }
 
   if (!valid) return;
+
+  if (txtId.attr('disabled')) {
+    var selectedRow = (0, _jquery.default)('#tbl-customers tbody tr.selected');
+    selectedRow.find('td:nth-child(2)').text(txtName.val());
+    selectedRow.find('td:nth-child(3)').text(txtAddress.val());
+    return;
+  }
+
+  if (existCustomer(id)) {
+    alert("customer already exists");
+    txtId.trigger('select');
+    return;
+  }
+
   var rowHTML = "\n                    <tr>\n                        <td>".concat(id, "</td>\n                        <td>").concat(name, "</td>\n                        <td>").concat(address, "</td>\n                        <td><div class=\"trash\"></div></td>\n                    </tr>\n                  ");
   (0, _jquery.default)('#tbl-customers tbody').append(rowHTML);
-  var trash = (0, _jquery.default)('.trash');
-  trash.off('click');
-  trash.on('click', function (eventData) {
-    if (confirm('Are you sure to delete the customer ')) {
-      (0, _jquery.default)(eventData.target).parents('tr').fadeOut(500, function () {
-        (0, _jquery.default)(this).remove();
-        showHideTableFooter();
-      });
-    }
-  });
   showHideTableFooter();
+  showHidePagination();
+
+  if (((0, _jquery.default)('#tbl-customers tbody tr').length - 1) % pageSize === 0) {
+    initPagination();
+  }
+
+  navigateToPage(pages === 0 ? 1 : pages);
+  (0, _jquery.default)('#btn-clear').trigger('click');
 });
+/* select the correct row */
+
+(0, _jquery.default)('#tbl-customers tbody').on('click', 'tr', function () {
+  var txtId = (0, _jquery.default)('#txt-id');
+  var txtName = (0, _jquery.default)('#txt-name');
+  var txtAddress = (0, _jquery.default)('#txt-address');
+  var id = (0, _jquery.default)(this).find('td:first-child').text();
+  var name = (0, _jquery.default)(this).find('td:nth-child(2)').text();
+  var address = (0, _jquery.default)(this).find('td:nth-child(3)').text();
+  txtId.val(id);
+  txtId.attr('disabled', "true");
+  txtName.val(name);
+  txtAddress.val(address);
+  (0, _jquery.default)('#tbl-customers tbody tr').removeClass('selected');
+  (0, _jquery.default)(this).addClass('selected');
+});
+/* Delete table row */
+
+(0, _jquery.default)('#tbl-customers tbody').on('click', '.trash', function (eventData) {
+  if (confirm('Are you sure to delete?')) {
+    (0, _jquery.default)(eventData.target).parents("tr").fadeOut(500, function () {
+      (0, _jquery.default)(this).remove();
+      showHideTableFooter();
+      showHidePagination();
+
+      if ((0, _jquery.default)("#tbl-customers tbody tr").length % pageSize === 0) {
+        initPagination();
+
+        if (selectedPage >= pages) {
+          selectedPage = pages;
+          navigateToPage(selectedPage);
+        }
+      } else {
+        navigateToPage(selectedPage);
+      }
+
+      (0, _jquery.default)('#btn-clear').trigger('click');
+    });
+  }
+});
+/* Reset button */
+
+(0, _jquery.default)('#btn-clear').on('click', function () {
+  (0, _jquery.default)("#tbl-customers tbody tr.selected").removeClass('selected');
+  (0, _jquery.default)("#txt-id").removeAttr('disabled').trigger('focus');
+});
+/* event - window resize */
+
+(0, _jquery.default)(window).on('resize', function () {
+  pageSize = calculatePageSize();
+  initPagination();
+  showHidePagination();
+  navigateToPage(1);
+});
+/* function - find duplicates */
+
+function existCustomer(id) {
+  var ids = (0, _jquery.default)('#tbl-customers tbody tr td:first-child');
+
+  for (var i = 0; i < ids.length; i++) {
+    if ((0, _jquery.default)(ids[i]).text() === id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+/* Hide Table Footer */
+
 
 function showHideTableFooter() {
   var tfoot = (0, _jquery.default)('#tbl-customers tfoot');
   (0, _jquery.default)('#tbl-customers tbody tr').length > 0 ? tfoot.hide() : tfoot.show();
+}
+/* Hide Pagination */
+
+
+function showHidePagination() {
+  var nav = (0, _jquery.default)('nav');
+  (0, _jquery.default)('#tbl-customers tbody tr').length > pageSize ? nav.removeClass('d-none') : nav.addClass('d-none');
+}
+/* calculate page size */
+
+
+function calculatePageSize() {
+  if ((0, _jquery.default)(window).width() < 992) {
+    return 7;
+  }
+
+  var tbl = (0, _jquery.default)("#tbl-customers");
+  var tFoot = (0, _jquery.default)("#tbl-customers tfoot");
+  var rowHtml = "\n                     <tr class=\"dummies\">\n                        <td>C001</td>\n                        <td>Dinusha</td>\n                        <td>Gampaha</td>\n                        <td><div class=\"trash\"></div></td>\n                     </tr>\n                     ";
+  var nav = (0, _jquery.default)('nav');
+  nav.removeClass('d-none');
+  var top = (0, _jquery.default)(window).height() - ((0, _jquery.default)('footer').height() + nav.outerHeight(true));
+  nav.addClass('d-none');
+  tFoot.hide();
+  tbl.find('tbody tr').hide();
+
+  while (true) {
+    tbl.find('tbody').append(rowHtml);
+    var bottom = tbl.outerHeight(true) + tbl.offset().top;
+
+    if (bottom >= top) {
+      var _pageSize = tbl.find('tbody tr.dummies').length - 1;
+
+      tbl.find('tbody tr.dummies').remove();
+      if (tbl.find('tbody tr').length === 0) tFoot.show();
+      return _pageSize;
+    }
+  }
+}
+/* Initialize pagination */
+
+
+function initPagination() {
+  var totalRows = (0, _jquery.default)('#tbl-customers tbody tr').length;
+  pages = Math.ceil(totalRows / pageSize);
+  var paginationHtml = "\n                           <li class=\"page-item\">\n                              <a class=\"page-link\" href=\"#\">\n                                 <i class=\"fas fa-backward\"></i>\n                              </a>\n                           </li>";
+
+  for (var i = 0; i < pages; i++) {
+    paginationHtml += "<li class=\"page-item\"><a class=\"page-link\" href=\"#\">".concat(i + 1, "</a></li>");
+  }
+
+  paginationHtml += "\n                        <li class=\"page-item\">\n                            <a class=\"page-link\" href=\"#\">\n                                <i class=\"fas fa-forward\"></i>\n                            </a>\n                        </li>\n    ";
+  (0, _jquery.default)(".pagination").html(paginationHtml);
+  (0, _jquery.default)(".page-item:first-child").on('click', function () {
+    if ((0, _jquery.default)(this).hasClass("disabled")) return;
+    navigateToPage(selectedPage - 1);
+  });
+  (0, _jquery.default)(".page-item:last-child").on('click', function () {
+    if ((0, _jquery.default)(this).hasClass("disabled")) return;
+    navigateToPage(selectedPage + 1);
+  });
+  (0, _jquery.default)(".page-item:not(.page-item:first-child, .page-item:last-child)").on('click', function (eventData) {
+    navigateToPage(+(0, _jquery.default)(this).text());
+  });
+}
+/* move to the correct page */
+
+
+function navigateToPage(page) {
+  if (page <= 0 || page > pages) return;
+  selectedPage = page;
+  (0, _jquery.default)(".pagination .page-item.active").removeClass('active');
+  (0, _jquery.default)(".pagination .page-item").each(function (index, elm) {
+    if (+(0, _jquery.default)(elm).text() === page) {
+      (0, _jquery.default)(elm).addClass("active");
+      return false;
+    }
+  });
+  (0, _jquery.default)(".pagination .page-item:last-child, .pagination .page-item:first-child").removeClass('disabled');
+
+  if (page === pages) {
+    (0, _jquery.default)(".pagination .page-item:last-child").addClass('disabled');
+  } else if (page === 1) {
+    (0, _jquery.default)(".pagination .page-item:first-child").addClass('disabled');
+  }
+
+  var rows = (0, _jquery.default)("#tbl-customers tbody tr");
+  var start = (page - 1) * pageSize;
+  rows.each(function (index, elm) {
+    if (index >= start && index < start + pageSize) {
+      (0, _jquery.default)(elm).show();
+    } else {
+      (0, _jquery.default)(elm).hide();
+    }
+  });
 }
 },{"jquery":"node_modules/jquery/dist/jquery.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -11296,7 +11478,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46397" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "32777" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
